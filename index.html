@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KRD Importaciones S.A.C — Panel de Gestión De Administracion</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- SheetJS — necesario para exportar Excel real (.xlsx) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+  <!-- ================================================
+       PANTALLA DE LOGIN
+  ================================================ -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <!-- Logo -->
+      <div class="login-logo">
+        <div class="login-logo-badge">
+          <span class="logo-k">K</span><span class="logo-rd">RD</span>
+        </div>
+        <div class="login-brand-text">
+          <span class="login-brand-name">KRD Importaciones S.A.C</span>
+          <span class="login-brand-sub">Panel de Gestión Empresarial - Creado por Raul y Estefany</span>
+        </div>
+      </div>
+
+      <div class="login-divider"></div>
+
+      <form id="formLogin" novalidate>
+        <div class="form-group">
+          <label for="loginUser">Usuario</label>
+          <div class="input-icon-wrap">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input type="text" id="loginUser" placeholder="Ingresa tu usuario" autocomplete="username" />
+          </div>
+          <span class="error-msg" id="err-loginUser"></span>
+        </div>
+
+        <div class="form-group" style="margin-top:16px">
+          <label for="loginPass">Contraseña</label>
+          <div class="input-icon-wrap">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" />
+            <button type="button" class="toggle-pass" id="togglePass" title="Mostrar/ocultar contraseña">
+              <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="error-msg" id="err-loginPass"></span>
+        </div>
+
+        <div class="login-error-box" id="loginErrorBox"></div>
+
+        <button type="submit" class="btn btn-primary btn-full" style="margin-top:24px">
+          Iniciar sesión
+        </button>
+      </form>
+
+      <p class="login-footer">Sistema de uso interno — KRD Importaciones</p>
+    </div>
+  </div>
+
+  <!-- ================================================
+       APP PRINCIPAL (se muestra tras login)
+  ================================================ -->
+  <div id="appScreen" class="app-screen hidden">
+
+    <!-- HEADER -->
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-logo">
+            <span class="logo-k">K</span><span class="logo-rd">RD</span>
+          </div>
+          <div class="brand-text">
+            <span class="brand-name">KRD Importaciones S.A.C</span>
+            <span class="brand-tagline">Panel de Gestión de Administracion</span>
+          </div>
+        </div>
+
+        <nav class="tab-nav">
+          <button class="tab-btn active" data-tab="asistencia">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Asistencia
+          </button>
+          <button class="tab-btn" data-tab="ventas">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Ventas &amp; Ganancias
+          </button>
+          <!-- Solo admin ve historial de cambios -->
+          <button class="tab-btn tab-admin-only hidden" data-tab="auditoria">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Auditoría
+          </button>
+          <button class="tab-btn" data-tab="descargas">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="1" x2="12" y2="15"/></svg>
+            Descargas
+          </button>
+        </nav>
+
+        <div class="header-right">
+          <div class="user-badge" id="userBadge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span id="userBadgeName"></span>
+            <span class="role-tag" id="userRoleTag"></span>
+          </div>
+          <div class="header-date" id="headerDate"></div>
+          <button class="btn-logout" id="btnLogout" title="Cerrar sesión">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Salir
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+
+      <!-- ══════════ ASISTENCIA ══════════ -->
+      <section id="tab-asistencia" class="tab-panel active">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Control de Asistencias</h2>
+            <p class="section-sub">Registro entradas y salidas del personal</p>
+          </div>
+          <div class="admin-only hidden" id="btnClearAsistWrap">
+            <button class="btn btn-danger btn-sm" id="clearAsistencia">✕ Limpiar registros</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">NUEVO REGISTRO</div>
+          <form id="formAsistencia" class="form-grid" novalidate>
+            <div class="form-group">
+              <label>Acción</label>
+              <div style="display:flex;gap:16px">
+                <label><input type="radio" name="accionAsistencia" value="entrada" checked> Registrar entrada</label>
+                <label><input type="radio" name="accionAsistencia" value="salida"> Registrar salida</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="nombreTrabajador">Nombre del trabajador</label>
+              <input type="text" id="nombreTrabajador" placeholder="Ej: Juan Pérez" autocomplete="off" />
+              <span class="error-msg" id="err-nombre"></span>
+            </div>
+            <div class="form-group">
+              <label for="horaEntrada">Hora de entrada</label>
+              <input type="time" id="horaEntrada" />
+              <span class="error-msg" id="err-entrada"></span>
+            </div>
+            <div class="form-group">
+              <label for="horaSalida">Hora de salida</label>
+              <input type="time" id="horaSalida" />
+              <span class="error-msg" id="err-salida"></span>
+            </div>
+            <div class="form-group" id="groupSelectSalida" style="display:none">
+              <label for="selectTrabajadorSalida">Seleccionar trabajador</label>
+              <select id="selectTrabajadorSalida">
+                <option value="">— Selecciona —</option>
+              </select>
+              <span class="error-msg" id="err-select"></span>
+            </div>
+            <div class="form-group form-group--action">
+              <button type="submit" class="btn btn-primary btn-full" id="btnRegistrarAsistencia">+ Registrar</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card card--table">
+          <div class="card-label">REGISTROS DEL DÍA</div>
+          <div class="table-meta" id="totalAsistencias">0 trabajadores registrados</div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Trabajador</th><th>Entrada</th><th>Salida</th><th>Horas</th><th>Registrado por</th>
+                  <th class="admin-only hidden"></th>
+                </tr>
+              </thead>
+              <tbody id="bodyAsistencia"></tbody>
+            </table>
+            <div class="empty-state" id="emptyAsistencia">
+              <div class="empty-icon">👥</div>
+              <p>Sin registros aún.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ VENTAS ══════════ -->
+      <section id="tab-ventas" class="tab-panel">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Ventas y Ganancias</h2>
+            <p class="section-sub">Resumen diario por método de pago y control mensual</p>
+          </div>
+        </div>
+
+        <div class="mes-selector-bar">
+          <label for="mesSelector">Mes activo:</label>
+          <select id="mesSelector"></select>
+          <button class="btn btn-sm btn-ghost" id="btnNuevoMes">+ Nuevo mes</button>
+          <button class="btn btn-sm btn-danger admin-only hidden" id="clearDia">✕ Limpiar mes</button>
+        </div>
+
+        <div class="card">
+          <div class="card-label">REGISTRAR DÍA</div>
+          <form id="formVentas" class="form-grid-ventas" novalidate>
+            <div class="ventas-row-top">
+              <div class="form-group">
+                <label for="fechaVenta">Fecha</label>
+                <input type="date" id="fechaVenta" />
+                <span class="error-msg" id="err-fecha"></span>
+              </div>
+              <div class="form-group">
+                <label for="ventaEfectivo">
+                  <span class="metodo-badge" style="background:#10b981;color:white">EFECTIVO</span> Monto (S/)
+                </label>
+                <input type="number" id="ventaEfectivo" placeholder="0.00" min="0" step="0.01" />
+                <span class="error-msg" id="err-efectivo"></span>
+              </div>
+              <div class="form-group">
+                <label for="ventaYape">
+                  <span class="metodo-badge metodo-yape">YAPE</span> Monto (S/)
+                </label>
+                <input type="number" id="ventaYape" placeholder="0.00" min="0" step="0.01" />
+                <span class="error-msg" id="err-yape"></span>
+              </div>
+              <div class="form-group">
+                <label for="ventaPlin">
+                  <span class="metodo-badge metodo-plin">PLIN</span> Monto (S/)
+                </label>
+                <input type="number" id="ventaPlin" placeholder="0.00" min="0" step="0.01" />
+                <span class="error-msg" id="err-plin"></span>
+              </div>
+              <div class="form-group">
+                <label for="ventaTransf">
+                  <span class="metodo-badge" style="background:#ef4444;color:white">GASTOS</span> Monto (S/)
+                </label>
+                <input type="number" id="ventaTransf" placeholder="0.00" min="0" step="0.01" />
+                <span class="error-msg" id="err-transf"></span>
+              </div>
+              <div class="form-group">
+                <label for="gananciaDelDia">Ganancia realizada del día (S/)</label>
+                <input type="number" id="gananciaDelDia" placeholder="0.00" min="0" step="0.01" />
+                <span class="error-msg" id="err-ganancia"></span>
+              </div>
+              <div class="form-group form-group--action">
+                <button type="submit" class="btn btn-primary btn-full">+ Guardar día</button>
+              </div>
+            </div>
+          </form>
+
+          <div class="live-preview">
+            <div class="preview-item">
+              <span class="preview-label">Efectivo</span>
+              <span class="preview-value" id="previewEfectivo" style="color:#10b981">S/ 0.00</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">Yape</span>
+              <span class="preview-value" id="previewYapeVal">S/ 0.00</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">Plin</span>
+              <span class="preview-value" id="previewPlinVal">S/ 0.00</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">Gastos</span>
+              <span class="preview-value" id="previewTransfVal" style="color:#ef4444">S/ 0.00</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">Total bruto</span>
+              <span class="preview-value" id="previewTotalBruto">S/ 0.00</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">Total neto</span>
+              <span class="preview-value val-accent" id="previewTotal">S/ 0.00</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">Ganancia realizada</span>
+              <span class="preview-value" id="previewGanancia" style="color:#10b981">S/ 0.00</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">Balance restante</span>
+              <span class="preview-value" id="previewBalance">S/ 0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card--table">
+          <div class="card-label" id="labelMesActual">DÍAS REGISTRADOS</div>
+          <div class="table-wrapper">
+            <table class="tabla-ventas-dias">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th><span class="metodo-badge" style="background:#10b981;color:white">EFECTIVO</span></th>
+                  <th><span class="metodo-badge metodo-yape">YAPE</span></th>
+                  <th><span class="metodo-badge metodo-plin">PLIN</span></th>
+                  <th><span class="metodo-badge" style="background:#ef4444;color:white">GASTOS</span></th>
+                  <th>Total bruto</th>
+                  <th>Total neto</th>
+                  <th>Ganancia</th>
+                  <th>Balance</th>
+                  <th>%</th>
+                  <th>Registrado por</th>
+                  <th class="admin-only hidden"></th>
+                </tr>
+              </thead>
+              <tbody id="bodyVentas"></tbody>
+            </table>
+            <div class="empty-state" id="emptyVentas">
+              <div class="empty-icon">📊</div>
+              <p>Sin registros este mes.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjetas resumen mensual -->
+        <div class="reporte-grid">
+          <div class="reporte-card reporte-card--efectivo">
+            <div class="reporte-icon-wrap">
+              <span class="metodo-badge" style="background:#10b981;color:white;font-size:0.75rem">EFECTIVO</span>
+            </div>
+            <div class="reporte-label">Total Efectivo del mes</div>
+            <div class="reporte-value" id="reporteEfectivo">S/ 0.00</div>
+          </div>
+          <div class="reporte-card reporte-card--yape">
+            <div class="reporte-icon-wrap">
+              <span class="metodo-badge metodo-yape" style="font-size:0.75rem">YAPE</span>
+            </div>
+            <div class="reporte-label">Total Yape del mes</div>
+            <div class="reporte-value" id="reporteYape">S/ 0.00</div>
+          </div>
+          <div class="reporte-card reporte-card--plin">
+            <div class="reporte-icon-wrap">
+              <span class="metodo-badge metodo-plin" style="font-size:0.75rem">PLIN</span>
+            </div>
+            <div class="reporte-label">Total Plin del mes</div>
+            <div class="reporte-value" id="reportePlin">S/ 0.00</div>
+          </div>
+          <div class="reporte-card reporte-card--transf">
+            <div class="reporte-icon-wrap">
+              <span class="metodo-badge metodo-transf" style="font-size:0.75rem">GASTOS</span>
+            </div>
+            <div class="reporte-label">Gastos totales</div>
+            <div class="reporte-value" id="reporteTransf">S/ 0.00</div>
+          </div>
+          <div class="reporte-card reporte-card--bruto">
+            <div class="reporte-icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="reporte-label">Total bruto del mes</div>
+            <div class="reporte-value" id="reporteTotalBruto">S/ 0.00</div>
+          </div>
+          <div class="reporte-card reporte-card--ventas">
+            <div class="reporte-icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="reporte-label">Total neto del mes</div>
+            <div class="reporte-value" id="reporteTotalVentas">S/ 0.00</div>
+          </div>
+          <div class="reporte-card reporte-card--costos">
+            <div class="reporte-icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <div class="reporte-label">Ganancia realizada del mes</div>
+            <div class="reporte-value" id="reporteCostoTotal">S/ 0.00</div>
+          </div>
+          <div class="reporte-card reporte-card--ganancia">
+            <div class="reporte-icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+            <div class="reporte-label">Balance restante del mes</div>
+            <div class="reporte-value" id="reporteGananciaTotal">S/ 0.00</div>
+          </div>
+          <div class="reporte-card reporte-card--dias">
+            <div class="reporte-icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="reporte-label">Días registrados</div>
+            <div class="reporte-value" id="reporteDias">0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ AUDITORÍA (solo admin) ══════════ -->
+      <section id="tab-auditoria" class="tab-panel">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Registro de Auditoría</h2>
+            <p class="section-sub">Historial de todas las acciones realizadas en el sistema</p>
+          </div>
+          <button class="btn btn-danger btn-sm" id="clearAuditoria">✕ Limpiar historial</button>
+        </div>
+        <div class="card card--table">
+          <div class="card-label">HISTORIAL DE ACCIONES</div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr><th>#</th><th>Fecha y hora</th><th>Usuario</th><th>Rol</th><th>Acción</th><th>Detalle</th></tr>
+              </thead>
+              <tbody id="bodyAuditoria"></tbody>
+            </table>
+            <div class="empty-state" id="emptyAuditoria">
+              <div class="empty-icon">🔍</div>
+              <p>Sin acciones registradas aún.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ DESCARGAS ══════════ -->
+      <section id="tab-descargas" class="tab-panel">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Descargas</h2>
+            <p class="section-sub">Exporta tus reportes en Excel (.xlsx)</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">DESCARGAR REPORTES</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+            <!-- Ventas -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div>
+                <label for="selectMesVentasDescargas" style="display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">Seleccionar mes:</label>
+                <select id="selectMesVentasDescargas" style="padding: 10px 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-primary); border-radius: 5px; font-size: 0.9rem; width: 100%; font-family: var(--font-body);">
+                </select>
+              </div>
+              <button class="btn btn-primary btn-full" id="btnDescargarVentas">📊 Descargar Ventas</button>
+            </div>
+            <!-- Asistencias -->
+            <div style="display: flex; flex-direction: column; gap: 12px; justify-content: flex-end;">
+              <button class="btn btn-primary btn-full" id="btnDescargarAsistencias">👥 Descargar Asistencias</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div><!-- /appScreen -->
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Modal nuevo mes -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-title">Crear nuevo mes</div>
+      <div class="form-group" style="margin-top:16px">
+        <label for="inputNuevoMes">Nombre del mes</label>
+        <input type="text" id="inputNuevoMes" placeholder="Ej: Enero 2025" autocomplete="off" />
+        <span class="error-msg" id="err-mes"></span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="modalCancelar">Cancelar</button>
+        <button class="btn btn-primary" id="modalConfirmar">Crear mes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
