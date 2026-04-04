@@ -3,12 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KRD Importaciones S.A.C — Panel de Gestión De Administracion</title>
+  <title>KRD Importaciones S.A.C — Panel de Gestión</title>
   <link rel="stylesheet" href="styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- SheetJS — necesario para exportar Excel real (.xlsx) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -18,14 +16,13 @@
   ================================================ -->
   <div id="loginScreen" class="login-screen">
     <div class="login-card">
-      <!-- Logo -->
       <div class="login-logo">
         <div class="login-logo-badge">
           <span class="logo-k">K</span><span class="logo-rd">RD</span>
         </div>
         <div class="login-brand-text">
           <span class="login-brand-name">KRD Importaciones S.A.C</span>
-          <span class="login-brand-sub">Panel de Gestión Empresarial - Creado por Raul y Estefany</span>
+          <span class="login-brand-sub">Panel de Gestión Empresarial — Creado por Raul y Estefany</span>
         </div>
       </div>
 
@@ -47,7 +44,7 @@
             <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" />
             <button type="button" class="toggle-pass" id="togglePass" title="Mostrar/ocultar contraseña">
-              <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
           <span class="error-msg" id="err-loginPass"></span>
@@ -65,11 +62,10 @@
   </div>
 
   <!-- ================================================
-       APP PRINCIPAL (se muestra tras login)
+       APP PRINCIPAL
   ================================================ -->
   <div id="appScreen" class="app-screen hidden">
 
-    <!-- HEADER -->
     <header class="site-header">
       <div class="header-inner">
         <div class="brand">
@@ -78,12 +74,13 @@
           </div>
           <div class="brand-text">
             <span class="brand-name">KRD Importaciones S.A.C</span>
-            <span class="brand-tagline">Panel de Gestión de Administracion</span>
+            <span class="brand-tagline">Panel de Gestión de Administración</span>
           </div>
         </div>
 
         <nav class="tab-nav">
-          <button class="tab-btn active" data-tab="asistencia">
+          <!-- Asistencia: visible para admin Y colaboradores -->
+          <button class="tab-btn" data-tab="asistencia">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             Asistencia
           </button>
@@ -91,12 +88,13 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             Ventas &amp; Ganancias
           </button>
-          <!-- Solo admin ve historial de cambios -->
+          <!-- Solo admin -->
           <button class="tab-btn tab-admin-only hidden" data-tab="auditoria">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             Auditoría
           </button>
-          <button class="tab-btn" data-tab="descargas">
+          <!-- Solo admin -->
+          <button class="tab-btn tab-admin-only hidden" data-tab="descargas">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="1" x2="12" y2="15"/></svg>
             Descargas
           </button>
@@ -119,57 +117,143 @@
 
     <main class="main-content">
 
-      <!-- ══════════ ASISTENCIA ══════════ -->
-      <section id="tab-asistencia" class="tab-panel active">
+      <!-- ══════════ ASISTENCIA (solo admin) ══════════ -->
+      <section id="tab-asistencia" class="tab-panel">
         <div class="section-header">
           <div>
             <h2 class="section-title">Control de Asistencias</h2>
-            <p class="section-sub">Registro entradas y salidas del personal</p>
+            <p class="section-sub">Registro de entradas y salidas del personal</p>
           </div>
           <div class="admin-only hidden" id="btnClearAsistWrap">
-            <button class="btn btn-danger btn-sm" id="clearAsistencia">✕ Limpiar registros</button>
+            <button class="btn btn-danger btn-sm" id="clearAsistencia">✕ Limpiar registros del día</button>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-label">NUEVO REGISTRO</div>
-          <form id="formAsistencia" class="form-grid" novalidate>
-            <div class="form-group">
-              <label>Acción</label>
-              <div style="display:flex;gap:16px">
-                <label><input type="radio" name="accionAsistencia" value="entrada" checked> Registrar entrada</label>
-                <label><input type="radio" name="accionAsistencia" value="salida"> Registrar salida</label>
+        <!-- Formulario de asistencia: colaboradores solo ven su propio registro -->
+        <div class="card card--asistencia" id="cardFormAsistencia">
+
+          <!-- VISTA COLABORADOR: solo ingreso/salida de sí mismo -->
+          <div id="asistColabView" class="hidden">
+
+            <!-- Header del colaborador -->
+            <div class="colab-header">
+              <div class="colab-header-icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div class="colab-header-info">
+                <div class="colab-header-title" id="colabHeaderNombre">Mi Asistencia</div>
+                <div class="colab-header-sub" id="colabHeaderFecha"></div>
               </div>
             </div>
-            <div class="form-group">
-              <label for="nombreTrabajador">Nombre del trabajador</label>
-              <input type="text" id="nombreTrabajador" placeholder="Ej: Juan Pérez" autocomplete="off" />
-              <span class="error-msg" id="err-nombre"></span>
+
+            <!-- Estado actual -->
+            <div class="colab-asist-status" id="colabAsistStatus"></div>
+
+            <!-- Botones de acción -->
+            <div id="colabBotonesWrap" class="colab-btns-wrap">
+              <button class="btn btn-colab-entrada" id="btnColabEntrada">
+                <span class="btn-colab-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                </span>
+                <span class="btn-colab-text">
+                  <span class="btn-colab-label">REGISTRAR ENTRADA</span>
+                  <span class="btn-colab-hint">Marca el inicio de tu jornada</span>
+                </span>
+              </button>
+              <button class="btn btn-colab-salida" id="btnColabSalida" disabled>
+                <span class="btn-colab-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </span>
+                <span class="btn-colab-text">
+                  <span class="btn-colab-label">REGISTRAR SALIDA</span>
+                  <span class="btn-colab-hint">Marca el fin de tu jornada</span>
+                </span>
+              </button>
             </div>
-            <div class="form-group">
-              <label for="horaEntrada">Hora de entrada</label>
-              <input type="time" id="horaEntrada" />
-              <span class="error-msg" id="err-entrada"></span>
+
+            <!-- Info de ayuda -->
+            <div class="colab-help-note">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              Se te pedirá confirmar la hora antes de guardar. Puedes ajustarla si es necesario.
             </div>
-            <div class="form-group">
-              <label for="horaSalida">Hora de salida</label>
-              <input type="time" id="horaSalida" />
-              <span class="error-msg" id="err-salida"></span>
+          </div>
+
+          <!-- VISTA ADMIN: formulario completo -->
+          <div id="asistAdminView" class="hidden">
+            <div class="card-label">NUEVO REGISTRO DE ASISTENCIA</div>
+
+            <!-- Selector de acción como tarjetas -->
+            <div class="asist-accion-selector">
+              <label class="accion-card" id="labelAccionEntrada">
+                <input type="radio" name="accionAsistencia" value="entrada" checked />
+                <span class="accion-card-icon accion-card-icon--entrada">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                </span>
+                <span class="accion-card-text">
+                  <span class="accion-card-title">Registrar Entrada</span>
+                  <span class="accion-card-sub">Inicio de jornada</span>
+                </span>
+              </label>
+              <label class="accion-card" id="labelAccionSalida">
+                <input type="radio" name="accionAsistencia" value="salida" />
+                <span class="accion-card-icon accion-card-icon--salida">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </span>
+                <span class="accion-card-text">
+                  <span class="accion-card-title">Registrar Salida</span>
+                  <span class="accion-card-sub">Fin de jornada</span>
+                </span>
+              </label>
             </div>
-            <div class="form-group" id="groupSelectSalida" style="display:none">
-              <label for="selectTrabajadorSalida">Seleccionar trabajador</label>
-              <select id="selectTrabajadorSalida">
-                <option value="">— Selecciona —</option>
-              </select>
-              <span class="error-msg" id="err-select"></span>
-            </div>
-            <div class="form-group form-group--action">
-              <button type="submit" class="btn btn-primary btn-full" id="btnRegistrarAsistencia">+ Registrar</button>
-            </div>
-          </form>
+
+            <form id="formAsistencia" class="form-grid-asist" novalidate>
+              <div class="form-group" id="groupNombreTrabajador">
+                <label for="nombreTrabajador">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Nombre del trabajador
+                </label>
+                <input type="text" id="nombreTrabajador" placeholder="Ej: Juan Pérez" autocomplete="off" />
+                <span class="error-msg" id="err-nombre"></span>
+              </div>
+              <div class="form-group" id="groupHoraEntrada">
+                <label for="horaEntrada">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Hora de entrada
+                </label>
+                <input type="time" id="horaEntrada" />
+                <span class="error-msg" id="err-entrada"></span>
+              </div>
+              <div class="form-group" id="groupHoraSalida">
+                <label for="horaSalida">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Hora de salida <span style="color:var(--text-muted);font-weight:400">(opcional)</span>
+                </label>
+                <input type="time" id="horaSalida" />
+                <span class="error-msg" id="err-salida"></span>
+              </div>
+              <div class="form-group" id="groupSelectSalida" style="display:none">
+                <label for="selectTrabajadorSalida">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                  Seleccionar trabajador
+                </label>
+                <select id="selectTrabajadorSalida">
+                  <option value="">— Selecciona un trabajador —</option>
+                </select>
+                <span class="error-msg" id="err-select"></span>
+              </div>
+              <div class="form-group form-group--action">
+                <button type="submit" class="btn btn-primary btn-full" id="btnRegistrarAsistencia">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  Registrar
+                </button>
+              </div>
+            </form>
+          </div>
+
         </div>
 
-        <div class="card card--table">
+        <!-- Tabla: visible para admin Y colaboradores -->
+        <div class="card card--table" id="cardTablaAsistencia">
           <div class="card-label">REGISTROS DEL DÍA</div>
           <div class="table-meta" id="totalAsistencias">0 trabajadores registrados</div>
           <div class="table-wrapper">
@@ -184,7 +268,7 @@
             </table>
             <div class="empty-state" id="emptyAsistencia">
               <div class="empty-icon">👥</div>
-              <p>Sin registros aún.</p>
+              <p>Sin registros hoy.</p>
             </div>
           </div>
         </div>
@@ -244,7 +328,7 @@
                 <span class="error-msg" id="err-transf"></span>
               </div>
               <div class="form-group">
-                <label for="gananciaDelDia">Ganancia realizada del día (S/)</label>
+                <label for="gananciaDelDia">Ganancia realizada (S/)</label>
                 <input type="number" id="gananciaDelDia" placeholder="0.00" min="0" step="0.01" />
                 <span class="error-msg" id="err-ganancia"></span>
               </div>
@@ -290,7 +374,8 @@
           </div>
         </div>
 
-        <div class="card card--table">
+        <!-- Tabla de registros: SOLO visible para admin -->
+        <div class="card card--table admin-only hidden" id="cardTablaVentas">
           <div class="card-label" id="labelMesActual">DÍAS REGISTRADOS</div>
           <div class="table-wrapper">
             <table class="tabla-ventas-dias">
@@ -308,7 +393,7 @@
                   <th>Balance</th>
                   <th>%</th>
                   <th>Registrado por</th>
-                  <th class="admin-only hidden"></th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody id="bodyVentas"></tbody>
@@ -320,68 +405,58 @@
           </div>
         </div>
 
-        <!-- Tarjetas resumen mensual -->
-        <div class="reporte-grid">
+        <!-- Mensaje para colaboradores en vez de la tabla -->
+        <div class="card colab-only hidden" id="cardColabVentasMsg">
+          <div class="colab-asist-status colab-status--ok">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Tu registro del día ha sido guardado correctamente. El historial de ventas es visible solo para el administrador.
+          </div>
+        </div>
+
+        <!-- Tarjetas resumen mensual: SOLO admin -->
+        <div class="reporte-grid admin-only hidden" id="reporteGrid">
           <div class="reporte-card reporte-card--efectivo">
-            <div class="reporte-icon-wrap">
-              <span class="metodo-badge" style="background:#10b981;color:white;font-size:0.75rem">EFECTIVO</span>
-            </div>
+            <div class="reporte-icon-wrap"><span class="metodo-badge" style="background:#10b981;color:white;font-size:0.75rem">EFECTIVO</span></div>
             <div class="reporte-label">Total Efectivo del mes</div>
             <div class="reporte-value" id="reporteEfectivo">S/ 0.00</div>
           </div>
           <div class="reporte-card reporte-card--yape">
-            <div class="reporte-icon-wrap">
-              <span class="metodo-badge metodo-yape" style="font-size:0.75rem">YAPE</span>
-            </div>
+            <div class="reporte-icon-wrap"><span class="metodo-badge metodo-yape" style="font-size:0.75rem">YAPE</span></div>
             <div class="reporte-label">Total Yape del mes</div>
             <div class="reporte-value" id="reporteYape">S/ 0.00</div>
           </div>
           <div class="reporte-card reporte-card--plin">
-            <div class="reporte-icon-wrap">
-              <span class="metodo-badge metodo-plin" style="font-size:0.75rem">PLIN</span>
-            </div>
+            <div class="reporte-icon-wrap"><span class="metodo-badge metodo-plin" style="font-size:0.75rem">PLIN</span></div>
             <div class="reporte-label">Total Plin del mes</div>
             <div class="reporte-value" id="reportePlin">S/ 0.00</div>
           </div>
           <div class="reporte-card reporte-card--transf">
-            <div class="reporte-icon-wrap">
-              <span class="metodo-badge metodo-transf" style="font-size:0.75rem">GASTOS</span>
-            </div>
+            <div class="reporte-icon-wrap"><span class="metodo-badge" style="background:#ef4444;color:white;font-size:0.75rem">GASTOS</span></div>
             <div class="reporte-label">Gastos totales</div>
             <div class="reporte-value" id="reporteTransf">S/ 0.00</div>
           </div>
           <div class="reporte-card reporte-card--bruto">
-            <div class="reporte-icon-wrap">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
+            <div class="reporte-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
             <div class="reporte-label">Total bruto del mes</div>
             <div class="reporte-value" id="reporteTotalBruto">S/ 0.00</div>
           </div>
           <div class="reporte-card reporte-card--ventas">
-            <div class="reporte-icon-wrap">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
+            <div class="reporte-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
             <div class="reporte-label">Total neto del mes</div>
             <div class="reporte-value" id="reporteTotalVentas">S/ 0.00</div>
           </div>
           <div class="reporte-card reporte-card--costos">
-            <div class="reporte-icon-wrap">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            </div>
+            <div class="reporte-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
             <div class="reporte-label">Ganancia realizada del mes</div>
             <div class="reporte-value" id="reporteCostoTotal">S/ 0.00</div>
           </div>
           <div class="reporte-card reporte-card--ganancia">
-            <div class="reporte-icon-wrap">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-            </div>
+            <div class="reporte-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
             <div class="reporte-label">Balance restante del mes</div>
             <div class="reporte-value" id="reporteGananciaTotal">S/ 0.00</div>
           </div>
           <div class="reporte-card reporte-card--dias">
-            <div class="reporte-icon-wrap">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
+            <div class="reporte-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
             <div class="reporte-label">Días registrados</div>
             <div class="reporte-value" id="reporteDias">0</div>
           </div>
@@ -414,7 +489,7 @@
         </div>
       </section>
 
-      <!-- ══════════ DESCARGAS ══════════ -->
+      <!-- ══════════ DESCARGAS (solo admin) ══════════ -->
       <section id="tab-descargas" class="tab-panel">
         <div class="section-header">
           <div>
@@ -425,33 +500,51 @@
 
         <div class="card">
           <div class="card-label">DESCARGAR REPORTES</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
-            <!-- Ventas -->
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-              <div>
-                <label for="selectMesVentasDescargas" style="display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">Seleccionar mes:</label>
-                <select id="selectMesVentasDescargas" style="padding: 10px 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-primary); border-radius: 5px; font-size: 0.9rem; width: 100%; font-family: var(--font-body);">
-                </select>
+          <div class="descargas-grid">
+            <div class="descarga-box">
+              <div class="descarga-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Datos de Ventas Mensuales
               </div>
-              <button class="btn btn-primary btn-full" id="btnDescargarVentas">📊 Descargar Ventas</button>
+              <p class="descarga-desc">Exporta todos los días registrados del mes seleccionado con totales y márgenes.</p>
+              <div>
+                <label for="selectMesVentasDescargas" style="display:block;margin-bottom:8px;font-size:0.75rem;color:var(--text-secondary);letter-spacing:0.1em;text-transform:uppercase;">Seleccionar mes:</label>
+                <select id="selectMesVentasDescargas" class="select-descarga"></select>
+              </div>
+              <button class="btn btn-primary btn-full" id="btnDescargarVentas">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="1" x2="12" y2="15"/></svg>
+                Descargar Ventas
+              </button>
             </div>
-            <!-- Asistencias -->
-            <div style="display: flex; flex-direction: column; gap: 12px; justify-content: flex-end;">
-              <button class="btn btn-primary btn-full" id="btnDescargarAsistencias">👥 Descargar Asistencias</button>
+            <div class="descarga-box">
+              <div class="descarga-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                Asistencias del Día
+              </div>
+              <p class="descarga-desc">Exporta los registros de asistencia del día actual con horas y duraciones.</p>
+              <button class="btn btn-primary btn-full" id="btnDescargarAsistencias">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="1" x2="12" y2="15"/></svg>
+                Descargar Asistencias
+              </button>
             </div>
           </div>
         </div>
       </section>
 
     </main>
-  </div><!-- /appScreen -->
+  </div>
 
   <div id="toast" class="toast"></div>
 
-  <!-- Modal nuevo mes -->
+  <!-- ================================================
+       MODAL — NUEVO MES
+  ================================================ -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
-      <div class="modal-title">Crear nuevo mes</div>
+      <div class="modal-header">
+        <div class="modal-title">Crear nuevo mes</div>
+        <button class="modal-close" id="modalCerrar" title="Cerrar">✕</button>
+      </div>
       <div class="form-group" style="margin-top:16px">
         <label for="inputNuevoMes">Nombre del mes</label>
         <input type="text" id="inputNuevoMes" placeholder="Ej: Enero 2025" autocomplete="off" />
@@ -464,7 +557,108 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- ================================================
+       MODAL — CONFIRMACIÓN CRÍTICA
+  ================================================ -->
+  <div class="modal-overlay" id="modalConfirmOverlay">
+    <div class="modal modal--confirm">
+      <div class="modal-icon-danger">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="modal-title" id="confirmTitle">¿Confirmar acción?</div>
+      <p class="modal-desc" id="confirmDesc">Esta acción no se puede deshacer.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="confirmCancelar">Cancelar</button>
+        <button class="btn btn-danger" id="confirmAceptar">Confirmar</button>
+      </div>
+    </div>
+  </div>
 
+  <!-- ================================================
+       MODAL — GUARDAR (confirmación antes de insertar)
+  ================================================ -->
+  <div class="modal-overlay" id="modalGuardarOverlay">
+    <div class="modal modal--confirm">
+      <div class="modal-icon-success">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="modal-title">Confirmar registro</div>
+      <p class="modal-desc" id="guardarDesc">¿Deseas guardar estos datos?</p>
+      <div class="modal-preview-box" id="guardarPreviewBox"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="guardarCancelar">Revisar</button>
+        <button class="btn btn-primary" id="guardarAceptar">Sí, guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================
+       MODAL — REAUTENTICACIÓN ADMIN (para exportar)
+  ================================================ -->
+  <div class="modal-overlay" id="modalReauthOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Verificar identidad</div>
+        <button class="modal-close" id="reauthCerrar" title="Cerrar">✕</button>
+      </div>
+      <p class="modal-desc" style="margin-bottom:16px">Ingresa tu contraseña de administrador para exportar este reporte.</p>
+      <div class="form-group">
+        <label for="reauthPass">Contraseña</label>
+        <div class="input-icon-wrap">
+          <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" id="reauthPass" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <span class="error-msg" id="err-reauth"></span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="reauthCancelar">Cancelar</button>
+        <button class="btn btn-primary" id="reauthAceptar">Verificar y exportar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================
+       MODAL — HORA COLABORADOR (entrada/salida) — MEJORADO
+  ================================================ -->
+  <div class="modal-overlay" id="modalColabHoraOverlay">
+    <div class="modal modal--colab-hora">
+      <!-- Icono de estado -->
+      <div class="colab-modal-icon-wrap" id="colabModalIcon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      </div>
+
+      <!-- Título y descripción -->
+      <div class="modal-title" id="colabModalTitle">Registrar entrada</div>
+      <p class="modal-desc" id="colabModalDesc">Confirma tu hora de entrada al trabajo.</p>
+
+      <!-- Separador -->
+      <div class="colab-modal-divider"></div>
+
+      <!-- Campo de hora con tamaño grande -->
+      <div class="colab-modal-hora-wrap">
+        <label class="colab-modal-hora-label" for="colabModalHora">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Hora de registro
+        </label>
+        <input type="time" id="colabModalHora" class="colab-modal-hora-input" />
+        <span class="error-msg" id="err-colab-modal-hora" style="text-align:center;display:block;margin-top:6px;"></span>
+        <p class="colab-modal-hora-hint">Puedes ajustar la hora si es necesario antes de confirmar.</p>
+      </div>
+
+      <!-- Acciones -->
+      <div class="modal-actions colab-modal-actions">
+        <button class="btn btn-ghost" id="colabModalCancelar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Cancelar
+        </button>
+        <button class="btn btn-primary" id="colabModalConfirmar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Confirmar hora
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
