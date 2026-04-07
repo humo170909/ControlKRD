@@ -1053,3 +1053,39 @@ td:first-child { color: var(--text-muted); font-size: 0.75rem; }
   to   { opacity: 1; transform: translateX(0); }
 }
 .row-new { animation: rowIn .25s ease forwards; }
+
+/* ================================================
+   MEJORAS v7 — Mes de asistencia + seguridad UI
+   ================================================ */
+
+/* Bloqueo de login: contador visible */
+.login-error-box.show {
+  max-height: 80px;
+  padding: 10px 14px;
+}
+
+/* Selector mes asistencia — mismo estilo que ventas */
+#mesSelectorAsistencia {
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text-primary);
+  font-family: var(--font-body); font-size: 0.88rem; padding: 7px 12px;
+  outline: none; cursor: pointer; transition: border-color var(--transition);
+  min-width: 160px;
+}
+#mesSelectorAsistencia:focus { border-color: var(--accent); }
+
+/* Tabla asistencia — columna fecha */
+.col-fecha-asist {
+  font-size: 0.72rem !important;
+  color: var(--text-muted) !important;
+  white-space: nowrap;
+}
+
+/* Indicador de mes activo en asistencia */
+.mes-asist-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-dim); border: 1px solid var(--border);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 0.68rem; color: var(--accent-light);
+  letter-spacing: 0.06em;
+}
