@@ -336,6 +336,7 @@ async function mostrarApp(session) {
     await renderAsistencia();
     toggleAsistenciaMode();
     await renderSelectMesesDescargas();
+    await renderSelectMesesDescargasAsistencia();
   } else {
     document.getElementById('asistAdminView').classList.add('hidden');
     document.getElementById('formAsistencia').classList.add('hidden');
@@ -539,6 +540,7 @@ inputMesAsist?.addEventListener('keydown', e => {
 document.getElementById('mesSelectorAsistencia')?.addEventListener('change', async () => {
   await renderAsistencia();
   if (!isAdmin()) await renderColabAsistencia();
+  if (isAdmin()) await renderSelectMesesDescargasAsistencia();
 });
 
 /* ══════════════════════════════════════════════
