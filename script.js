@@ -1,42 +1,15 @@
 /* ================================================
-   script.js — KRD Importaciones v7
+   script.js — KRD Importaciones v8 (SEGURO)
    ================================================
-   MEJORAS v7:
-   ✔ Asistencias guardadas con mes_asist_id (acumulado mensual)
-   ✔ Selector de mes para asistencias (igual que ventas)
-   ✔ Descarga mensual de asistencias (no solo del día)
-   ✔ Botón "Nuevo mes de asistencia" en la sección de asistencia
+   CAMBIOS DE SEGURIDAD v8:
+   ✔ ELIMINADAS todas las contraseñas del código fuente
+   ✔ ELIMINADO PASS_MAP y array USERS con credenciales
+   ✔ Login completamente delegado a Supabase Auth
+   ✔ Roles gestionados desde tabla 'perfiles' en Supabase
    ✔ Rate limiting en login (máx 5 intentos, bloqueo 2 min)
    ✔ Sanitización de inputs contra XSS
-   ✔ Credenciales fuera del código (hash básico + comentario de mejora)
-   ✔ Bloqueo de acceso por rol reforzado
-   ✔ Todas las mejoras anteriores de v6 mantenidas
+   ✔ Re-autenticación para exportar usa Supabase Auth
    ================================================ */
-
-/* ══════════════════════════════════════════════
-   SEGURIDAD — NOTA IMPORTANTE
-   ══════════════════════════════════════════════
-   Las contraseñas aquí son un hash SHA-256 en hex.
-   Para máxima seguridad, mover la autenticación a
-   Supabase Auth o un backend propio.
-   ══════════════════════════════════════════════ */
-
-/* Hash SHA-256 de las contraseñas (generado con: crypto.subtle.digest) */
-/* admin: 5756784 → hash abajo | MIXY: Mixy2826 | JAIRO: Jairo1726 */
-const USERS = [
-  { username: 'admin',  passHash: 'c8a8a2fd7427e8a2a31bb5e90c9e20d3d1c5a3b9f0e6d4c2b1a8f7e5d3c2b1a0', role: 'admin',    display: 'Administrador' },
-  { username: 'MIXY',   passHash: '3a7b9c1d5e8f2a4b6c0d3e7f1a5b9c2d6e0f4a8b3c7d1e5f9a2b6c0d4e8f3a7', role: 'employee', display: 'Mixy' },
-  { username: 'JAIRO',  passHash: '9f3e7a1b5c8d2e6f0a4b7c1d5e9f3a7b2c6d0e4f8a3b7c1d5e9f2a6b0c4d8e3', role: 'employee', display: 'Jairo' },
-];
-
-/* CONTRASEÑAS REALES (solo para verificación local, idealmente mover a backend)
-   admin: 5756784 | MIXY: Mixy2826 | JAIRO: Jairo1726
-   Se mantienen en texto para compatibilidad, pero se recomienda usar Supabase Auth */
-const PASS_MAP = {
-  'admin': '5756784',
-  'MIXY':  'Mixy2826',
-  'JAIRO': 'Jairo1726',
-};
 
 const SUPABASE_URL = 'https://vbphssxbfuthmkcldnkb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_abwXhuRC0foLsmBMwUso5g_ZCnhWmqS';
@@ -220,6 +193,7 @@ function mostrarGuardar(descripcion, previewHtml) {
   });
 }
 
+/* ── Re-autenticación: verifica con Supabase Auth (sin contraseñas en el código) ── */
 function mostrarReauth() {
   return new Promise(resolve => {
     const overlay   = document.getElementById('modalReauthOverlay');
@@ -231,21 +205,36 @@ function mostrarReauth() {
     overlay.classList.add('active');
     setTimeout(() => inputPass.focus(), 80);
 
-    const onAceptar = () => {
-      const pass  = inputPass.value;
-      const admin = Object.entries(PASS_MAP).find(([u]) => {
-        const found = USERS.find(x => x.username === u && x.role === 'admin');
-        return found;
+    const onAceptar = async () => {
+      const pass = inputPass.value.trim();
+      if (!pass) {
+        errEl.textContent = 'Ingresa tu contraseña.';
+        inputPass.classList.add('input-error');
+        return;
+      }
+
+      const s = getSession();
+      if (!s || s.role !== 'admin') {
+        errEl.textContent = 'No tienes permisos de administrador.';
+        return;
+      }
+
+      /* Verificar contraseña contra Supabase Auth */
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email: s.email,
+        password: pass
       });
-      const adminPass = admin ? PASS_MAP[admin[0]] : null;
-      if (!adminPass || pass !== adminPass) {
+
+      if (error) {
         errEl.textContent = 'Contraseña incorrecta.';
         inputPass.classList.add('input-error');
         inputPass.value = ''; inputPass.focus();
         return;
       }
+
       overlay.classList.remove('active'); cleanup(); resolve(true);
     };
+
     const onCancelar = () => { overlay.classList.remove('active'); cleanup(); resolve(false); };
     const onCerrar   = () => { overlay.classList.remove('active'); cleanup(); resolve(false); };
     const onKeydown  = (e) => { if (e.key === 'Enter') onAceptar(); if (e.key === 'Escape') onCancelar(); };
@@ -304,7 +293,7 @@ function mostrarColabHoraModal(tipo) {
 }
 
 /* ══════════════════════════════════════════════
-   5. LOGIN / LOGOUT
+   5. LOGIN / LOGOUT — ahora con Supabase Auth
    ══════════════════════════════════════════════ */
 async function mostrarApp(session) {
   document.getElementById('loginScreen').classList.add('hidden');
@@ -391,13 +380,14 @@ function iniciarContadorBloqueo(errorBox) {
   }, 1000);
 }
 
+/* ── Formulario de login: usa Supabase Auth (email + contraseña) ── */
 document.getElementById('formLogin').addEventListener('submit', async function (e) {
   e.preventDefault();
-  const user     = document.getElementById('loginUser');
-  const pass     = document.getElementById('loginPass');
-  const errorBox = document.getElementById('loginErrorBox');
+  const userInput = document.getElementById('loginUser');
+  const passInput = document.getElementById('loginPass');
+  const errorBox  = document.getElementById('loginErrorBox');
 
-  clearErrors(['err-loginUser', 'err-loginPass'], [user, pass]);
+  clearErrors(['err-loginUser', 'err-loginPass'], [userInput, passInput]);
   errorBox.textContent = ''; errorBox.classList.remove('show');
 
   /* Verificar bloqueo */
@@ -405,18 +395,23 @@ document.getElementById('formLogin').addEventListener('submit', async function (
     errorBox.textContent = `Demasiados intentos. Espera ${getBlockSecondsLeft()} segundos.`;
     errorBox.classList.add('show');
     iniciarContadorBloqueo(errorBox);
-    pass.value = '';
+    passInput.value = '';
     return;
   }
 
   let ok = true;
-  if (!user.value.trim()) { setError('err-loginUser', user, 'Ingresa tu usuario.');    ok = false; }
-  if (!pass.value)        { setError('err-loginPass', pass, 'Ingresa tu contraseña.'); ok = false; }
+  if (!userInput.value.trim()) { setError('err-loginUser', userInput, 'Ingresa tu usuario.');    ok = false; }
+  if (!passInput.value)        { setError('err-loginPass', passInput, 'Ingresa tu contraseña.'); ok = false; }
   if (!ok) return;
 
-  const found = USERS.find(u => u.username === user.value.trim() && PASS_MAP[u.username] === pass.value);
+  /* Buscar el email del usuario en la tabla 'perfiles' por username */
+  const { data: perfilData, error: perfilError } = await supabaseClient
+    .from('perfiles')
+    .select('email, rol, display_name')
+    .eq('username', userInput.value.trim())
+    .single();
 
-  if (!found) {
+  if (perfilError || !perfilData) {
     incrementLoginFails();
     const fails = getLoginFails();
     if (fails >= MAX_LOGIN_TRIES) {
@@ -428,14 +423,41 @@ document.getElementById('formLogin').addEventListener('submit', async function (
       errorBox.textContent = `Usuario o contraseña incorrectos. Intentos restantes: ${restantes}.`;
     }
     errorBox.classList.add('show');
-    pass.value = ''; pass.focus();
+    passInput.value = ''; passInput.focus();
+    return;
+  }
+
+  /* Autenticar con Supabase Auth usando email + contraseña */
+  const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+    email: perfilData.email,
+    password: passInput.value
+  });
+
+  if (authError || !authData.user) {
+    incrementLoginFails();
+    const fails = getLoginFails();
+    if (fails >= MAX_LOGIN_TRIES) {
+      blockLogin();
+      errorBox.textContent = `Demasiados intentos fallidos. Bloqueado por ${BLOCK_MS / 60000} minutos.`;
+      iniciarContadorBloqueo(errorBox);
+    } else {
+      const restantes = MAX_LOGIN_TRIES - fails;
+      errorBox.textContent = `Usuario o contraseña incorrectos. Intentos restantes: ${restantes}.`;
+    }
+    errorBox.classList.add('show');
+    passInput.value = ''; passInput.focus();
     return;
   }
 
   resetLoginFails();
-  const session = { username: found.username, role: found.role, display: found.display };
+  const session = {
+    username: userInput.value.trim(),
+    email:    perfilData.email,
+    role:     perfilData.rol,
+    display:  perfilData.display_name
+  };
   setSession(session);
-  await audit('login', `Inicio de sesión como ${found.display}`);
+  await audit('login', `Inicio de sesión como ${perfilData.display_name}`);
   await mostrarApp(session);
   this.reset();
 });
@@ -444,6 +466,7 @@ document.getElementById('btnLogout').addEventListener('click', async () => {
   const confirmado = await mostrarConfirm('¿Cerrar sesión?', `Saldrás de la sesión de ${getSession()?.display}.`, 'Salir');
   if (!confirmado) return;
   await audit('logout', `Cierre de sesión de ${getSession()?.display}`);
+  await supabaseClient.auth.signOut();
   clearSession();
   mostrarLogin();
   mostrarToast('Sesión cerrada.', 'info');
@@ -463,7 +486,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 /* ══════════════════════════════════════════════
-   6. MESES DE ASISTENCIA (nuevo — para acumulado mensual)
+   6. MESES DE ASISTENCIA
    ══════════════════════════════════════════════ */
 
 async function getMesesAsistencia() {
@@ -547,11 +570,9 @@ document.getElementById('mesSelectorAsistencia')?.addEventListener('change', asy
    7. ASISTENCIA
    ══════════════════════════════════════════════ */
 
-/* Obtener asistencias del mes activo (o del día si no hay mes) */
 async function getAsistencias() {
   const mesId = getMesActivoAsistencia();
   if (mesId) {
-    const hoy = getTodayStr();
     const { data, error } = await supabaseClient
       .from('asistencia').select('*')
       .eq('mes_asist_id', mesId)
@@ -560,7 +581,6 @@ async function getAsistencias() {
     if (error) { console.error(error); return []; }
     return data || [];
   }
-  /* Fallback: solo hoy si no hay mes */
   const hoy = getTodayStr();
   const { data, error } = await supabaseClient
     .from('asistencia').select('*').eq('fecha', hoy)
@@ -569,7 +589,6 @@ async function getAsistencias() {
   return data || [];
 }
 
-/* Solo asistencias del día actual del mes activo */
 async function getAsistenciasHoy() {
   const mesId = getMesActivoAsistencia();
   const hoy   = getTodayStr();
@@ -1267,7 +1286,6 @@ document.getElementById('btnDescargarAsistencias').addEventListener('click', asy
     return [i + 1, r.nombre, r.fecha || '—', dia, r.entrada, r.salida || '—', calcHoras(r.entrada, r.salida), r.registrado_por || '—'];
   });
 
-  /* Resumen por trabajador al final */
   rows.push([]);
   rows.push(['--- RESUMEN POR TRABAJADOR ---', '', '', '', '', '', '', '']);
   rows.push(['Trabajador', 'Días registrados', 'Días completos', 'Total horas aprox.', '', '', '', '']);
@@ -1314,22 +1332,3 @@ document.getElementById('btnDescargarAsistencias').addEventListener('click', asy
   document.getElementById('fechaVenta').value =
     `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
 })();
-
-/* ══════════════════════════════════════════════
-   SUPABASE — TABLA REQUERIDA (ejecutar en Supabase SQL Editor):
-
-   -- Tabla meses_asistencia (nueva)
-   CREATE TABLE IF NOT EXISTS meses_asistencia (
-     id TEXT PRIMARY KEY,
-     nombre TEXT NOT NULL,
-     created_at TIMESTAMPTZ DEFAULT NOW()
-   );
-
-   -- Agregar columna mes_asist_id a asistencia (si no existe)
-   ALTER TABLE asistencia ADD COLUMN IF NOT EXISTS mes_asist_id TEXT REFERENCES meses_asistencia(id);
-   ALTER TABLE asistencia ADD COLUMN IF NOT EXISTS fecha DATE;
-
-   -- Índices para rendimiento
-   CREATE INDEX IF NOT EXISTS idx_asist_mes ON asistencia(mes_asist_id);
-   CREATE INDEX IF NOT EXISTS idx_asist_fecha ON asistencia(fecha);
-   ══════════════════════════════════════════════ */
