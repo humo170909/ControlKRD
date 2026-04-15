@@ -1,5 +1,5 @@
 /* ================================================
-   styles.css — KRD Importaciones v6 (REFACTORIZADO COMPLETO)
+   styles.css — KRD Importaciones v9
    Paleta: Azul marino + Violeta/Azul eléctrico
    Fuentes: Rajdhani · Exo 2
    ================================================ */
@@ -32,6 +32,9 @@
   --danger-dim:    rgba(240, 90, 110, 0.12);
   --success:       #4ecb8d;
   --success-dim:   rgba(78, 203, 141, 0.12);
+
+  --whatsapp:      #25d366;
+  --whatsapp-dim:  rgba(37, 211, 102, 0.12);
 
   --yape-color:    #6b21e8;
   --yape-bg:       rgba(107, 33, 232, 0.2);
@@ -207,7 +210,7 @@ body {
   padding: 0; max-height: 0; overflow: hidden;
   transition: max-height .3s, padding .3s;
 }
-.login-error-box.show { max-height: 60px; padding: 10px 14px; }
+.login-error-box.show { max-height: 80px; padding: 10px 14px; }
 
 .login-footer {
   margin-top: 28px; text-align: center;
@@ -267,12 +270,27 @@ body {
   font-family: var(--font-display); font-weight: 600;
   font-size: 0.86rem; letter-spacing: 0.05em; text-transform: uppercase;
   cursor: pointer; transition: all var(--transition);
+  position: relative;
 }
 .tab-btn svg { opacity: 0.6; transition: opacity var(--transition); }
 .tab-btn:hover { color: var(--text-primary); background: var(--accent-dim); border-color: var(--border); }
 .tab-btn:hover svg { opacity: 1; }
 .tab-btn.active { color: var(--accent-light); background: var(--accent-dim); border-color: var(--accent); }
 .tab-btn.active svg { opacity: 1; }
+
+/* Badge de observaciones no leídas */
+.obs-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  background: var(--danger); color: #fff;
+  border-radius: 9px; font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0; margin-left: 2px;
+  animation: pulse-badge 2s infinite;
+}
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.65; }
+}
 
 .header-right {
   display: flex; align-items: center; gap: 14px;
@@ -383,15 +401,11 @@ select#mesSelector:focus { border-color: var(--accent); }
 /* ================================================
    ASISTENCIA — CARD PRINCIPAL
    ================================================ */
-.card--asistencia {
-  padding: 32px;
-}
+.card--asistencia { padding: 32px; }
 
 /* ================================================
-   VISTA COLABORADOR — ASISTENCIA (MEJORADA)
+   VISTA COLABORADOR — ASISTENCIA
    ================================================ */
-
-/* Header del colaborador */
 .colab-header {
   display: flex; align-items: center; gap: 16px;
   padding: 18px 22px;
@@ -420,10 +434,7 @@ select#mesSelector:focus { border-color: var(--accent); }
   background-clip: text;
 }
 
-.colab-header-sub {
-  font-size: 0.72rem; color: var(--text-secondary);
-  letter-spacing: 0.05em;
-}
+.colab-header-sub { font-size: 0.72rem; color: var(--text-secondary); letter-spacing: 0.05em; }
 
 /* Estado de asistencia */
 .colab-asist-status {
@@ -437,223 +448,126 @@ select#mesSelector:focus { border-color: var(--accent); }
   color: var(--text-secondary);
 }
 .colab-asist-status svg { flex-shrink: 0; margin-top: 2px; }
+.colab-status--ok      { background: var(--success-dim); border-color: rgba(78,203,141,0.3); color: var(--success); }
+.colab-status--warn    { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: #fbbf24; }
+.colab-status--neutral { background: var(--accent-dim); border-color: rgba(123,94,248,0.25); color: var(--accent-light); }
 
-.colab-status--ok {
-  background: var(--success-dim);
-  border-color: rgba(78,203,141,0.35);
-  color: var(--success);
-}
-.colab-status--warn {
-  background: rgba(245,158,11,0.1);
-  border-color: rgba(245,158,11,0.35);
-  color: #fbbf24;
-}
-.colab-status--neutral {
-  background: var(--bg-input);
-  border-color: var(--border);
-  color: var(--text-secondary);
-}
-
-/* Botones de acción colaborador */
+/* Botones colaborador */
 .colab-btns-wrap {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 14px; margin-bottom: 20px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin-bottom: 20px;
 }
 
-/* Botón de entrada */
 .btn-colab-entrada,
 .btn-colab-salida {
   display: flex; align-items: center; gap: 16px;
-  padding: 20px 24px;
-  border-radius: var(--radius-lg);
-  cursor: pointer; transition: all var(--transition);
-  border: 2px solid transparent; width: 100%;
-  text-align: left;
+  padding: 20px 22px; border-radius: var(--radius-lg);
+  border: 1px solid; cursor: pointer;
+  transition: all var(--transition);
+  background: var(--bg-input); text-align: left; width: 100%;
 }
 
 .btn-colab-entrada {
-  background: linear-gradient(135deg, rgba(123,94,248,0.18) 0%, rgba(77,166,255,0.12) 100%);
-  border-color: rgba(123,94,248,0.4);
-  color: var(--accent-light);
+  border-color: rgba(78,203,141,0.3);
+  color: var(--success);
 }
 .btn-colab-entrada:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(123,94,248,0.3) 0%, rgba(77,166,255,0.2) 100%);
-  border-color: var(--accent);
+  background: var(--success-dim);
+  border-color: var(--success);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(123,94,248,0.3);
+  box-shadow: 0 8px 24px rgba(78,203,141,0.2);
 }
-
 .btn-colab-salida {
-  background: linear-gradient(135deg, rgba(77,166,255,0.12) 0%, rgba(78,203,141,0.1) 100%);
-  border-color: rgba(77,166,255,0.3);
-  color: var(--accent-2);
+  border-color: rgba(240,90,110,0.3);
+  color: var(--danger);
 }
 .btn-colab-salida:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(77,166,255,0.22) 0%, rgba(78,203,141,0.15) 100%);
-  border-color: var(--accent-2);
+  background: var(--danger-dim);
+  border-color: var(--danger);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(77,166,255,0.25);
+  box-shadow: 0 8px 24px rgba(240,90,110,0.2);
 }
-
 .btn-colab-entrada:disabled,
 .btn-colab-salida:disabled {
-  opacity: 0.38; cursor: not-allowed; transform: none; box-shadow: none;
+  opacity: 0.35; cursor: not-allowed; transform: none;
 }
 
-.btn-colab-icon {
-  width: 46px; height: 46px; flex-shrink: 0;
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
-}
+.btn-colab-icon { font-size: 1.5rem; flex-shrink: 0; }
+.btn-colab-text { display: flex; flex-direction: column; gap: 2px; }
+.btn-colab-label { font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; letter-spacing: 0.06em; }
+.btn-colab-hint  { font-size: 0.7rem; opacity: 0.7; }
 
-.btn-colab-text {
-  display: flex; flex-direction: column; gap: 3px;
-}
-
-.btn-colab-label {
-  font-family: var(--font-display); font-weight: 700;
-  font-size: 0.92rem; letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.btn-colab-hint {
-  font-size: 0.72rem; opacity: 0.7; font-weight: 400;
-  letter-spacing: 0.02em; text-transform: none;
-  font-family: var(--font-body);
-}
-
-/* Nota de ayuda */
 .colab-help-note {
   display: flex; align-items: center; gap: 8px;
-  font-size: 0.73rem; color: var(--text-muted);
-  padding: 10px 14px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  line-height: 1.5;
+  font-size: 0.72rem; color: var(--text-muted);
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 10px 14px;
 }
-.colab-help-note svg { flex-shrink: 0; color: var(--accent); }
 
 /* ================================================
-   VISTA ADMIN — FORMULARIO ASISTENCIA (MEJORADO)
+   ASISTENCIA — VISTA ADMIN
    ================================================ */
-#asistAdminView { padding-top: 0; }
-
-/* Selector de acción como tarjetas */
 .asist-accion-selector {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 12px; margin-bottom: 24px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px;
 }
-
 .accion-card {
   display: flex; align-items: center; gap: 14px;
-  padding: 16px 20px;
-  border-radius: var(--radius-lg);
-  border: 2px solid var(--border);
-  background: var(--bg-input);
+  padding: 14px 18px; background: var(--bg-input);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
   cursor: pointer; transition: all var(--transition);
-  position: relative; overflow: hidden;
 }
-
-.accion-card input[type="radio"] {
-  position: absolute; opacity: 0; width: 0; height: 0;
-}
-
-.accion-card:hover {
-  border-color: var(--accent);
-  background: var(--accent-dim);
-}
-
+.accion-card input[type="radio"] { display: none; }
 .accion-card:has(input:checked) {
   border-color: var(--accent);
   background: var(--accent-dim);
   box-shadow: 0 0 0 1px var(--accent);
 }
-
 .accion-card-icon {
-  width: 40px; height: 40px; flex-shrink: 0;
-  border-radius: 10px;
+  width: 40px; height: 40px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
-
-.accion-card-icon--entrada {
-  background: rgba(123,94,248,0.2);
-  color: var(--accent-light);
-  border: 1px solid rgba(123,94,248,0.3);
-}
-.accion-card-icon--salida {
-  background: rgba(77,166,255,0.15);
-  color: var(--accent-2);
-  border: 1px solid rgba(77,166,255,0.3);
-}
+.accion-card-icon--entrada { background: var(--success-dim); color: var(--success); }
+.accion-card-icon--salida  { background: var(--danger-dim);  color: var(--danger);  }
 
 .accion-card-text { display: flex; flex-direction: column; gap: 2px; }
+.accion-card-title { font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.04em; color: var(--text-primary); }
+.accion-card-sub   { font-size: 0.7rem; color: var(--text-muted); }
 
-.accion-card-title {
-  font-family: var(--font-display); font-weight: 700;
-  font-size: 0.9rem; letter-spacing: 0.05em;
-  color: var(--text-primary);
-}
-.accion-card-sub {
-  font-size: 0.67rem; color: var(--text-muted); letter-spacing: 0.05em;
-}
-
-/* Grid del formulario admin */
 .form-grid-asist {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px; align-items: end;
 }
 
 /* ================================================
-   MODAL HORA COLABORADOR — MEJORADO
+   MODAL — HORA COLABORADOR
    ================================================ */
-.modal--colab-hora {
-  max-width: 420px; text-align: center;
-  padding: 36px 32px;
-}
-
-.modal--colab-hora::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--grad-brand); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-}
+.modal--colab-hora { text-align: center; max-width: 380px; }
 
 .colab-modal-icon-wrap {
   width: 72px; height: 72px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 20px;
-  background: var(--success-dim);
-  color: var(--success);
-  border: 1px solid rgba(78,203,141,0.35);
-  box-shadow: 0 0 30px rgba(78,203,141,0.15);
+  margin: 0 auto 16px;
+  background: var(--success-dim); color: var(--success);
+  border: 1px solid rgba(78,203,141,0.3);
 }
-
 .colab-modal-icon-wrap.modal-icon-exit {
-  background: rgba(77,166,255,0.12);
-  color: var(--accent-2);
-  border-color: rgba(77,166,255,0.3);
-  box-shadow: 0 0 30px rgba(77,166,255,0.15);
+  background: var(--danger-dim); color: var(--danger);
+  border-color: rgba(240,90,110,0.3);
 }
 
 .colab-modal-divider {
   height: 1px; background: var(--border);
-  margin: 20px 0;
+  margin: 18px 0;
 }
 
-.colab-modal-hora-wrap {
-  margin-bottom: 8px;
-  text-align: left;
-}
-
+.colab-modal-hora-wrap { margin-bottom: 4px; }
 .colab-modal-hora-label {
-  display: flex; align-items: center; gap: 7px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
   font-size: 0.67rem; font-weight: 500;
   letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--text-secondary); margin-bottom: 10px;
 }
-
 .colab-modal-hora-input {
   font-size: 2rem !important;
   font-family: var(--font-display) !important;
@@ -666,21 +580,10 @@ select#mesSelector:focus { border-color: var(--accent); }
   border-radius: var(--radius-lg) !important;
   color: var(--accent-light) !important;
 }
+.colab-modal-hora-hint { font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-top: 10px; line-height: 1.5; }
 
-.colab-modal-hora-hint {
-  font-size: 0.7rem; color: var(--text-muted);
-  text-align: center; margin-top: 10px; line-height: 1.5;
-}
-
-.colab-modal-actions {
-  justify-content: center !important;
-  gap: 12px !important;
-  margin-top: 24px !important;
-}
-
-.colab-modal-actions .btn {
-  min-width: 140px;
-}
+.colab-modal-actions { justify-content: center !important; gap: 12px !important; margin-top: 24px !important; }
+.colab-modal-actions .btn { min-width: 140px; }
 
 /* ================================================
    FORMULARIOS
@@ -736,9 +639,7 @@ select:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--ac
 select.input-error { border-color: var(--danger); }
 select:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.select-descarga {
-  padding: 10px 12px; width: 100%;
-}
+.select-descarga { padding: 10px 12px; width: 100%; }
 
 .error-msg { font-size: 0.66rem; color: var(--danger); letter-spacing: 0.04em; min-height: 14px; }
 
@@ -970,8 +871,6 @@ td:first-child { color: var(--text-muted); font-size: 0.75rem; }
 .modal-icon-danger  { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(240,90,110,0.3); }
 .modal-icon-success { background: var(--success-dim); color: var(--success); border: 1px solid rgba(78,203,141,0.3); }
 
-/* Ícono de salida en modal colaborador — ahora manejado por .colab-modal-icon-wrap.modal-icon-exit */
-
 .modal-preview-box {
   background: var(--bg-input); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 14px 18px; margin: 14px 0;
@@ -1003,6 +902,142 @@ td:first-child { color: var(--text-muted); font-size: 0.75rem; }
 .descarga-desc { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; }
 
 /* ================================================
+   OBSERVACIONES — NUEVA SECCIÓN
+   ================================================ */
+
+/* Card del formulario de observaciones */
+.card--obs-form {
+  border-color: rgba(123,94,248,0.3);
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(123,94,248,0.04) 100%);
+}
+
+.obs-form-inner {
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.obs-form-textarea-wrap { width: 100%; }
+
+textarea#obsTexto {
+  width: 100%; padding: 14px;
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text-primary);
+  font-family: var(--font-body); font-size: 0.9rem;
+  outline: none; resize: vertical; min-height: 110px; max-height: 300px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  line-height: 1.6;
+}
+textarea#obsTexto::placeholder { color: var(--text-muted); }
+textarea#obsTexto:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+textarea#obsTexto.input-error { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-dim); }
+
+.obs-char-counter {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 6px;
+}
+.obs-count {
+  font-size: 0.65rem; color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+.obs-count.obs-count--warn { color: #fbbf24; }
+.obs-count.obs-count--limit { color: var(--danger); }
+
+.obs-form-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+}
+
+.obs-whatsapp-note {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.73rem; color: var(--whatsapp);
+  background: var(--whatsapp-dim);
+  border: 1px solid rgba(37,211,102,0.2);
+  border-radius: var(--radius); padding: 9px 14px;
+  flex: 1; min-width: 200px;
+}
+.obs-whatsapp-note svg { flex-shrink: 0; color: var(--whatsapp); }
+
+/* Badge de estado — observación leída/no leída */
+.obs-status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; white-space: nowrap;
+}
+.obs-status-badge--nueva {
+  background: rgba(77,166,255,0.15);
+  color: var(--accent-2);
+  border: 1px solid rgba(77,166,255,0.3);
+}
+.obs-status-badge--leida {
+  background: rgba(100,100,120,0.12);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* Fila no leída: resaltada */
+tbody tr.obs-row--nueva {
+  background: rgba(77,166,255,0.04);
+}
+
+/* Mensaje largo truncado */
+.obs-msg-text {
+  max-width: 340px;
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  word-break: break-word;
+}
+
+/* Botón marcar como leída */
+.btn-mark-leida {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 4px 10px; border-radius: 5px;
+  background: transparent; border: 1px solid rgba(77,166,255,0.3);
+  color: var(--accent-2); font-size: 0.7rem; font-family: var(--font-display);
+  font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+  cursor: pointer; transition: all var(--transition); white-space: nowrap;
+}
+.btn-mark-leida:hover { background: var(--accent-2-dim); border-color: var(--accent-2); }
+
+/* Spinner envío WhatsApp */
+.obs-sending-spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ================================================
+   MEJORAS v9 — Mes de asistencia
+   ================================================ */
+.login-error-box.show { max-height: 80px; padding: 10px 14px; }
+
+#mesSelectorAsistencia {
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text-primary);
+  font-family: var(--font-body); font-size: 0.88rem; padding: 7px 12px;
+  outline: none; cursor: pointer; transition: border-color var(--transition);
+  min-width: 160px;
+}
+#mesSelectorAsistencia:focus { border-color: var(--accent); }
+
+.col-fecha-asist { font-size: 0.72rem !important; color: var(--text-muted) !important; white-space: nowrap; }
+
+.mes-asist-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-dim); border: 1px solid var(--border);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 0.68rem; color: var(--accent-light);
+  letter-spacing: 0.06em;
+}
+
+/* ================================================
    RESPONSIVO
    ================================================ */
 @media (max-width: 900px) {
@@ -1030,11 +1065,12 @@ td:first-child { color: var(--text-muted); font-size: 0.75rem; }
   .live-preview { grid-template-columns: 1fr; gap: 12px; }
   .preview-item { padding: 8px 12px; }
   .table-meta { padding: 0 16px; }
-  /* Asistencia colaborador */
   .colab-btns-wrap { grid-template-columns: 1fr; }
   .asist-accion-selector { grid-template-columns: 1fr; }
   .form-grid-asist { grid-template-columns: 1fr; }
   .colab-modal-hora-input { font-size: 1.6rem !important; }
+  .obs-form-actions { flex-direction: column; align-items: stretch; }
+  .obs-whatsapp-note { min-width: unset; }
 }
 @media (max-width: 480px) {
   .form-grid-ventas .ventas-row-top { grid-template-columns: 1fr; }
@@ -1053,39 +1089,3 @@ td:first-child { color: var(--text-muted); font-size: 0.75rem; }
   to   { opacity: 1; transform: translateX(0); }
 }
 .row-new { animation: rowIn .25s ease forwards; }
-
-/* ================================================
-   MEJORAS v7 — Mes de asistencia + seguridad UI
-   ================================================ */
-
-/* Bloqueo de login: contador visible */
-.login-error-box.show {
-  max-height: 80px;
-  padding: 10px 14px;
-}
-
-/* Selector mes asistencia — mismo estilo que ventas */
-#mesSelectorAsistencia {
-  background: var(--bg-input); border: 1px solid var(--border);
-  border-radius: var(--radius); color: var(--text-primary);
-  font-family: var(--font-body); font-size: 0.88rem; padding: 7px 12px;
-  outline: none; cursor: pointer; transition: border-color var(--transition);
-  min-width: 160px;
-}
-#mesSelectorAsistencia:focus { border-color: var(--accent); }
-
-/* Tabla asistencia — columna fecha */
-.col-fecha-asist {
-  font-size: 0.72rem !important;
-  color: var(--text-muted) !important;
-  white-space: nowrap;
-}
-
-/* Indicador de mes activo en asistencia */
-.mes-asist-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--accent-dim); border: 1px solid var(--border);
-  border-radius: 20px; padding: 3px 10px;
-  font-size: 0.68rem; color: var(--accent-light);
-  letter-spacing: 0.06em;
-}
