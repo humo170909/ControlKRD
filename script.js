@@ -218,6 +218,51 @@ function clearErrors(ids, inputs = []) {
   });
   inputs.forEach((i) => i && i.classList.remove("input-error"));
 }
+/* ── Determinar estado de asistencia (Asistencia / Tardanza) ── */
+/* Límite: 10:20 AM → a tiempo; 10:21 AM en adelante → tardanza */
+function getEstadoAsistencia(horaEntrada) {
+  if (!horaEntrada) return "";
+  const [hh, mm] = horaEntrada.split(":").map(Number);
+  const totalMin = hh * 60 + mm;
+  const limiteMin = 10 * 60 + 20; // 10:20 AM = 620 minutos
+  return totalMin <= limiteMin ? "Asistencia" : "Tardanza";
+}
+
+/* Modal de estado al registrar entrada */
+function mostrarEstadoEntradaModal(horaEntrada, nombreColab) {
+  return new Promise((resolve) => {
+    const estado = getEstadoAsistencia(horaEntrada);
+    const esTardanza = estado === "Tardanza";
+    const modal = document.getElementById("modalEstadoEntradaOverlay");
+    const iconEl = document.getElementById("estadoEntradaIcon");
+    const titleEl = document.getElementById("estadoEntradaTitle");
+    const descEl = document.getElementById("estadoEntradaDesc");
+    const btnOk = document.getElementById("estadoEntradaOk");
+
+    if (esTardanza) {
+      iconEl.textContent = "⏰";
+      titleEl.textContent = "¡Llegaste tarde!";
+      titleEl.style.color = "#ef4444";
+      descEl.innerHTML = `<strong>${sanitize(nombreColab)}</strong>, tu hora de entrada es <strong>${horaEntrada}</strong>.<br>El límite es <strong>10:20 AM</strong>.<br><br>Tu registro queda marcado como <span style="color:#ef4444;font-weight:700">TARDANZA</span>.`;
+    } else {
+      iconEl.textContent = "✅";
+      titleEl.textContent = "¡Llegaste a tiempo!";
+      titleEl.style.color = "#10b981";
+      descEl.innerHTML = `<strong>${sanitize(nombreColab)}</strong>, tu hora de entrada es <strong>${horaEntrada}</strong>.<br><br>Tu registro queda marcado como <span style="color:#10b981;font-weight:700">ASISTENCIA</span>.`;
+    }
+
+    /* Mostrar con display:flex para centrar el contenido */
+    modal.style.display = "flex";
+
+    const onOk = () => {
+      modal.style.display = "none";
+      btnOk.removeEventListener("click", onOk);
+      resolve(estado);
+    };
+    btnOk.addEventListener("click", onOk);
+  });
+}
+
 function getTodayStr() {
   const now = new Date();
   // Usar hora local de Perú (UTC-5) para que no cambie de día a las 7pm UTC
@@ -889,6 +934,7 @@ document
       preview,
     );
     if (!confirmado) return;
+    const estadoEntrada = getEstadoAsistencia(hora);
     const nuevo = {
       nombre: s.display,
       entrada: hora,
@@ -896,6 +942,7 @@ document
       registrado_por: s.display,
       fecha: getTodayStr(),
       mes_asist_id: mesId,
+      estado: estadoEntrada,
     };
     const { error } = await supabaseClient.from("asistencia").insert(nuevo);
     if (error) {
@@ -905,9 +952,10 @@ document
     }
     await audit(
       "add",
-      `Entrada registrada por colaborador: ${s.display} (${hora}) — Mes: ${mesId}`,
+      `Entrada registrada por colaborador: ${s.display} (${hora}) [${estadoEntrada}] — Mes: ${mesId}`,
     );
-    mostrarToast(`✓ Entrada registrada a las ${hora}.`, "success");
+    mostrarToast(`✓ Entrada registrada a las ${hora} — ${estadoEntrada}.`, estadoEntrada === "Asistencia" ? "success" : "error");
+    await mostrarEstadoEntradaModal(hora, s.display);
     await renderColabAsistencia();
     await renderAsistencia();
   });
@@ -984,7 +1032,14 @@ async function renderAsistencia() {
   empty.classList.add("hidden");
   tbody.innerHTML = lista
     .map(
-      (r, i) => `
+      (r, i) => {
+        const estado = r.estado || getEstadoAsistencia(r.entrada);
+        const estadoBadge = estado === "Tardanza"
+          ? `<span style="background:#fee2e2;color:#ef4444;padding:2px 8px;border-radius:999px;font-size:0.72rem;font-weight:600">⏰ Tardanza</span>`
+          : estado === "Asistencia"
+          ? `<span style="background:#d1fae5;color:#059669;padding:2px 8px;border-radius:999px;font-size:0.72rem;font-weight:600">✓ Asistencia</span>`
+          : `<span style="color:var(--text-muted)">—</span>`;
+        return `
     <tr class="${i === lista.length - 1 ? "row-new" : ""}">
       <td>${i + 1}</td>
       <td>${sanitize(r.nombre)}</td>
@@ -992,9 +1047,11 @@ async function renderAsistencia() {
       <td class="val-mono">${r.entrada}</td>
       <td class="val-mono">${r.salida || '<span style="color:var(--text-muted)">—</span>'}</td>
       <td class="val-mono">${calcHoras(r.entrada, r.salida)}</td>
+      <td>${estadoBadge}</td>
       <td><span class="reg-by">${sanitize(r.registrado_por || "—")}</span></td>
       <td>${isAdmin() ? `<button class="btn-delete" onclick="delAsistencia('${r.id}')">✕</button>` : ""}</td>
-    </tr>`,
+    </tr>`;
+      },
     )
     .join("");
 }
@@ -1109,7 +1166,8 @@ document
         );
         return;
       }
-      const preview = `<strong>Trabajador:</strong> ${sanitize(nom.value.trim())}<br><strong>Hora entrada:</strong> ${ent.value}${sal.value ? `<br><strong>Hora salida:</strong> ${sal.value}` : ""}<br><strong>Fecha:</strong> ${hoy}<br><strong>Registrado por:</strong> ${sanitize(s?.display || "—")}`;
+      const estadoEntrada = getEstadoAsistencia(ent.value);
+      const preview = `<strong>Trabajador:</strong> ${sanitize(nom.value.trim())}<br><strong>Hora entrada:</strong> ${ent.value}${sal.value ? `<br><strong>Hora salida:</strong> ${sal.value}` : ""}<br><strong>Estado:</strong> ${estadoEntrada}<br><strong>Fecha:</strong> ${hoy}<br><strong>Registrado por:</strong> ${sanitize(s?.display || "—")}`;
       const confirmado = await mostrarGuardar(
         "¿Confirmar registro de entrada?",
         preview,
@@ -1122,6 +1180,7 @@ document
         registrado_por: s?.display || "—",
         fecha: hoy,
         mes_asist_id: mesId,
+        estado: estadoEntrada,
       };
       const { error } = await supabaseClient.from("asistencia").insert(nuevo);
       if (error) {
@@ -1131,10 +1190,11 @@ document
       }
       await audit(
         "add",
-        `Asistencia registrada (admin): ${nuevo.nombre} (${nuevo.entrada}–${nuevo.salida || "sin salida"})`,
+        `Asistencia registrada (admin): ${nuevo.nombre} (${nuevo.entrada}–${nuevo.salida || "sin salida"}) [${estadoEntrada}]`,
       );
       await renderAsistencia();
-      mostrarToast(`✓ Asistencia de ${nuevo.nombre} registrada.`, "success");
+      mostrarToast(`✓ Asistencia de ${nuevo.nombre} registrada — ${estadoEntrada}.`, "success");
+      await mostrarEstadoEntradaModal(ent.value, nom.value.trim());
       this.reset();
       toggleAsistenciaMode();
     } else {
@@ -1850,6 +1910,7 @@ document
       "Hora Entrada",
       "Hora Salida",
       "Duración",
+      "Estado",
       "Registrado por",
     ];
     const rows = asistencias.map((r, i) => {
@@ -1857,6 +1918,7 @@ document
       const dia = fecha
         ? fecha.toLocaleDateString("es-PE", { weekday: "short" }).toUpperCase()
         : "—";
+      const estado = r.estado || getEstadoAsistencia(r.entrada);
       return [
         i + 1,
         r.nombre,
@@ -1865,15 +1927,17 @@ document
         r.entrada,
         r.salida || "—",
         calcHoras(r.entrada, r.salida),
+        estado,
         r.registrado_por || "—",
       ];
     });
     rows.push([]);
-    rows.push(["--- RESUMEN POR TRABAJADOR ---", "", "", "", "", "", "", ""]);
+    rows.push(["--- RESUMEN POR TRABAJADOR ---", "", "", "", "", "", "", "", ""]);
     rows.push([
       "Trabajador",
       "Días registrados",
       "Días completos",
+      "Tardanzas",
       "Total horas aprox.",
       "",
       "",
@@ -1883,8 +1947,10 @@ document
     const trabajadoresMap = {};
     asistencias.forEach((r) => {
       if (!trabajadoresMap[r.nombre])
-        trabajadoresMap[r.nombre] = { dias: 0, completos: 0, minutos: 0 };
+        trabajadoresMap[r.nombre] = { dias: 0, completos: 0, tardanzas: 0, minutos: 0 };
       trabajadoresMap[r.nombre].dias++;
+      const estadoReg = r.estado || getEstadoAsistencia(r.entrada);
+      if (estadoReg === "Tardanza") trabajadoresMap[r.nombre].tardanzas++;
       if (r.entrada && r.salida) {
         trabajadoresMap[r.nombre].completos++;
         const [hE, mE] = r.entrada.split(":").map(Number);
@@ -1896,7 +1962,7 @@ document
     });
     Object.entries(trabajadoresMap).forEach(([nombre, stats]) => {
       const horas = `${Math.floor(stats.minutos / 60)}h ${String(stats.minutos % 60).padStart(2, "0")}m`;
-      rows.push([nombre, stats.dias, stats.completos, horas, "", "", "", ""]);
+      rows.push([nombre, stats.dias, stats.completos, stats.tardanzas, horas, "", "", "", ""]);
     });
     const hoy = new Date();
     exportarExcel(
@@ -2193,6 +2259,21 @@ document
    INIT
    ══════════════════════════════════════════════ */
 (async function init() {
+  /* Crear modal de estado de entrada si no existe en el HTML */
+  if (!document.getElementById("modalEstadoEntradaOverlay")) {
+    const div = document.createElement("div");
+    div.id = "modalEstadoEntradaOverlay";
+    div.className = "modal-overlay";
+    div.style.cssText = "display:none;align-items:center;justify-content:center;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);";
+    div.innerHTML = `
+      <div class="modal-card" style="max-width:380px;text-align:center;padding:2rem;background:var(--surface,#1e1e2e);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+        <div id="estadoEntradaIcon" style="font-size:3.5rem;margin-bottom:12px"></div>
+        <h3 id="estadoEntradaTitle" style="margin-bottom:10px;font-size:1.15rem;font-weight:700"></h3>
+        <p id="estadoEntradaDesc" style="color:var(--text-secondary,#94a3b8);font-size:0.88rem;margin-bottom:22px;line-height:1.6"></p>
+        <button id="estadoEntradaOk" class="btn btn-primary" style="width:100%;font-size:0.95rem">Aceptar</button>
+      </div>`;
+    document.body.appendChild(div);
+  }
   const session = getSession();
   if (session) {
     await mostrarApp(session);
